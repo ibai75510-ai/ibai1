@@ -1,0 +1,15 @@
+export const partnerOrganizations = [
+  "Meridian Institute of Genomic Sciences",
+  "Northgate Biosciences Group",
+  "Solvane Research Academy",
+  "Aurelius Life Sciences Institute",
+  "Continental Institute of Molecular Biology",
+  "Everline Research Laboratories",
+  "Kestrel Biomedical Research Center",
+  "Thornbury Institute of Applied Sciences",
+  "Vantage Genomics Consortium",
+  "Halcyon Bioscience Institute",
+  "Ridgemont Life Sciences Group",
+  "Cobalt Research Foundation",
+  "BioCareer",
+];

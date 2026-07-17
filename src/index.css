@@ -1,0 +1,103 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --obsidian: #121a1f;
+    --deep-slate: #1f2a30;
+    --warm-charcoal: #363b42;
+    --muted-moss: #828c78;
+    --pale-sage: #a8b29f;
+    --cream: #f4f3ef;
+    --alabaster: #faf9f6;
+    --terracotta: #c25e44;
+    --warm-gold: #d9a443;
+
+    --background: 0 0% 100%;
+    --foreground: 210 18% 10%;
+    --card: 40 20% 98%;
+    --card-foreground: 210 18% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 18% 10%;
+    --primary: 210 18% 10%;
+    --primary-foreground: 40 20% 96%;
+    --secondary: 40 10% 94%;
+    --secondary-foreground: 210 18% 10%;
+    --muted: 40 10% 94%;
+    --muted-foreground: 210 8% 45%;
+    --accent: 40 10% 94%;
+    --accent-foreground: 210 18% 10%;
+    --destructive: 14 55% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 10% 88%;
+    --input: 40 10% 88%;
+    --ring: 210 18% 10%;
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    @apply bg-[#faf9f6] text-[#121a1f] antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  ::selection {
+    background-color: rgba(194, 94, 68, 0.2);
+    color: #121a1f;
+  }
+}
+
+@layer components {
+  .btn-pill {
+    @apply inline-flex items-center justify-center px-8 py-3 rounded-full text-sm font-medium tracking-wide transition-all duration-300;
+  }
+
+  .btn-pill-primary {
+    @apply btn-pill bg-[#121a1f] text-[#f4f3ef] hover:bg-[#1f2a30];
+  }
+
+  .btn-pill-outline {
+    @apply btn-pill border border-[#121a1f] text-[#121a1f] hover:bg-[#121a1f] hover:text-[#f4f3ef];
+  }
+
+  .btn-pill-terracotta {
+    @apply btn-pill bg-[#c25e44] text-white hover:bg-[#a84d35];
+  }
+
+  .section-padding {
+    @apply py-20 md:py-28 lg:py-36;
+  }
+
+  .container-iba {
+    @apply max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .text-display {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .text-interface {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
