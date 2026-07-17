@@ -1,4 +1,4 @@
-import { getDb } from "../api/queries/connection";
+import { getDb } from "../server/queries/connection";
 import { researchArticles, news, events, organizations } from "./schema";
 import { fallbackResearchArticles } from "../src/data/fallbackResearchArticles";
 import { fallbackNews } from "../src/data/fallbackNews";

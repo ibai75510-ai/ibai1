@@ -28,7 +28,10 @@ app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 
 export default app;
 
-if (env.isProduction) {
+// Vercel imports `app` directly as a serverless function handler (see
+// api/index.ts) — it never runs this block, since Vercel has no long-lived
+// process to listen on a port and serves static files itself.
+if (env.isProduction && !process.env.VERCEL) {
   const { serve } = await import("@hono/node-server");
   const { serveStaticFiles } = await import("./lib/vite");
   serveStaticFiles(app);
