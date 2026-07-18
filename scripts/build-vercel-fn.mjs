@@ -15,7 +15,11 @@ import { build } from "esbuild";
 import { existsSync } from "fs";
 
 const entry = "scripts/vercel-entry.ts";
-const outfile = "api/[...path].js";
+// Plain filename, not api/[...path].js: Vercel's bracket catch-all filename
+// convention isn't reliably supported outside Next.js's own build tooling —
+// in testing it only matched a single path segment. vercel.json instead
+// explicitly rewrites all /api/* traffic to this one function.
+const outfile = "api/index.js";
 
 if (!existsSync(entry)) {
   console.error(`build-vercel-fn: entry point not found at "${entry}" (cwd: ${process.cwd()})`);
