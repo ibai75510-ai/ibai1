@@ -20,5 +20,5 @@
       "@db/*": ["./db/*"]
     }
   },
-  "include": ["server", "api", "contracts", "db"]
+  "include": ["server", "scripts", "contracts", "db"]
 }

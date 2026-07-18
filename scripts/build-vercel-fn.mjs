@@ -1,11 +1,20 @@
-// Bundles the Vercel serverless entry point directly via esbuild's JS API
-// instead of its CLI. This sidesteps any shell-specific quoting/globbing of
-// the bracketed catch-all filename ("api/[...path].ts") entirely, since the
-// path is passed as a plain JS string rather than parsed by a shell.
+// Bundles the Vercel serverless entry point and writes the finished,
+// fully self-contained JS directly into api/, which Vercel deploys as-is.
+//
+// The source deliberately lives OUTSIDE api/ (scripts/vercel-entry.ts) —
+// Vercel's own build system treats api/ as a special Serverless Functions
+// directory with its own (separate, isolated) build step, which raced our
+// custom buildCommand and meant the bundler could never reliably find or
+// write files there mid-build. Committing the pre-built output sidesteps
+// that entirely: Vercel just serves the finished api/[...path].js file,
+// nothing left to compile at deploy time.
+//
+// Run this manually after changing server/ code, then commit the updated
+// api/[...path].js alongside the source change.
 import { build } from "esbuild";
-import { unlinkSync, existsSync } from "fs";
+import { existsSync } from "fs";
 
-const entry = "api/[...path].ts";
+const entry = "scripts/vercel-entry.ts";
 const outfile = "api/[...path].js";
 
 if (!existsSync(entry)) {
@@ -24,5 +33,4 @@ await build({
   },
 });
 
-unlinkSync(entry);
 console.log(`build-vercel-fn: bundled ${entry} -> ${outfile}`);
