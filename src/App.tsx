@@ -16,6 +16,7 @@ const Events = lazy(() => import("@/pages/Events"));
 const EventDetail = lazy(() => import("@/pages/EventDetail"));
 const Network = lazy(() => import("@/pages/Network"));
 const OrganizationDetail = lazy(() => import("@/pages/OrganizationDetail"));
+const Verify = lazy(() => import("@/pages/Verify"));
 const Partnerships = lazy(() => import("@/pages/Partnerships"));
 const PaperSubmission = lazy(() => import("@/pages/PaperSubmission"));
 const Contact = lazy(() => import("@/pages/Contact"));
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/network" element={<Network />} />
             <Route path="/network/:slug" element={<OrganizationDetail />} />
+            <Route path="/verify" element={<Verify />} />
             <Route path="/partnerships" element={<Partnerships />} />
             <Route path="/paper-submission" element={<PaperSubmission />} />
             <Route path="/contact" element={<Contact />} />

@@ -12,6 +12,7 @@ const recognitionStatuses = ["recognized", "partner", "affiliated"];
 
 const emptyForm = {
   id: undefined as number | undefined,
+  recognitionCode: "",
   name: "",
   logoUrl: "",
   description: "",
@@ -46,6 +47,7 @@ export default function Organizations() {
   const openEdit = (item: any) => {
     setForm({
       id: item.id,
+      recognitionCode: item.recognitionCode || "",
       name: item.name,
       logoUrl: item.logoUrl || "",
       description: item.description || "",
@@ -93,6 +95,7 @@ export default function Organizations() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Recognition ID</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Recognition</TableHead>
               <TableHead>Featured</TableHead>
@@ -101,13 +104,14 @@ export default function Organizations() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">Loading...</TableCell></TableRow>
             ) : data?.items.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground">No organizations yet.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No organizations yet.</TableCell></TableRow>
             ) : (
               data?.items.map((item: any) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{item.recognitionCode || "—"}</TableCell>
                   <TableCell className="capitalize">{item.type.replace(/_/g, " ")}</TableCell>
                   <TableCell className="capitalize">{item.recognitionStatus}</TableCell>
                   <TableCell>{item.isFeatured ? "Yes" : "-"}</TableCell>
@@ -132,6 +136,12 @@ export default function Organizations() {
             <DialogTitle>{form.id ? "Edit Organization" : "New Organization"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {form.id && (
+              <div>
+                <label className="text-[12px] font-medium uppercase text-muted-foreground mb-1 block">Recognition ID</label>
+                <input readOnly disabled value={form.recognitionCode || "Generated on save"} className={`${inputClass} bg-muted font-mono text-xs cursor-not-allowed`} />
+              </div>
+            )}
             <div>
               <label className="text-[12px] font-medium uppercase text-muted-foreground mb-1 block">Name *</label>
               <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} />

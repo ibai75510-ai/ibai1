@@ -9,6 +9,7 @@ const navLinks = [
   { label: "News", href: "/news" },
   { label: "Events", href: "/events" },
   { label: "Network", href: "/network" },
+  { label: "Verify", href: "/verify" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -20,6 +21,7 @@ const routePrefetch: Record<string, () => Promise<unknown>> = {
   "/news": () => import("@/pages/News"),
   "/events": () => import("@/pages/Events"),
   "/network": () => import("@/pages/Network"),
+  "/verify": () => import("@/pages/Verify"),
   "/contact": () => import("@/pages/Contact"),
 };
 const prefetchedRoutes = new Set<string>();

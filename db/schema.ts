@@ -171,6 +171,9 @@ export const organizations = pgTable("organizations", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
+  // Unique, human-readable ID (e.g. "IBAI-INST-00001") issued when the org is created,
+  // so anyone can verify an institute's recognition status by code on /verify without an account.
+  recognitionCode: varchar("recognition_code", { length: 50 }).unique(),
   logoUrl: varchar("logo_url", { length: 500 }),
   description: text("description"),
   website: varchar("website", { length: 500 }),

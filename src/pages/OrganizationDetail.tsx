@@ -74,6 +74,15 @@ export default function OrganizationDetail() {
               <ShieldCheck className="w-4 h-4 text-[#c25e44]" />
               {recognitionLabels[org.recognitionStatus] || org.recognitionStatus}
             </span>
+            {org.recognitionCode && (
+              <Link
+                to={`/verify?code=${encodeURIComponent(org.recognitionCode)}`}
+                className="flex items-center gap-1.5 font-mono text-[12px] hover:text-[#c25e44] transition-colors"
+                title="Verify this recognition ID"
+              >
+                ID: {org.recognitionCode}
+              </Link>
+            )}
             {org.website && (
               <a
                 href={org.website}
