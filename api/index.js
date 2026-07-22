@@ -58515,16 +58515,22 @@ var organizationRouter = createRouter({
     const db = getDb();
     const query = input.query.trim();
     if (!query) return { exact: null, matches: [] };
+    const tightQuery = query.replace(/\s+/g, "");
     const exactRows = await db.select().from(organizations).where(
       or(
         sql`lower(${organizations.recognitionCode}) = lower(${query})`,
         eq(organizations.slug, query),
-        sql`lower(${organizations.name}) = lower(${query})`
+        sql`lower(replace(${organizations.name}, ' ', '')) = lower(${tightQuery})`
       )
     ).limit(1);
     const exactRow = exactRows[0];
     const exact = exactRow ? exactRow.recognitionCode ? exactRow : await backfillRecognitionCode(exactRow) : null;
-    const matchRows = await db.select().from(organizations).where(ilike(organizations.name, `%${query}%`)).orderBy(desc(organizations.isFeatured), organizations.name).limit(10);
+    const matchRows = await db.select().from(organizations).where(
+      or(
+        ilike(organizations.name, `%${query}%`),
+        sql`lower(replace(${organizations.name}, ' ', '')) like lower(${`%${tightQuery}%`})`
+      )
+    ).orderBy(desc(organizations.isFeatured), organizations.name).limit(10);
     const matches = await backfillMissingCodes(matchRows.filter((m) => m.id !== exact?.id));
     return { exact, matches };
   }),

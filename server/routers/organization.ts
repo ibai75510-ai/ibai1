@@ -74,6 +74,10 @@ export const organizationRouter = createRouter({
       const query = input.query.trim();
       if (!query) return { exact: null, matches: [] };
 
+      // Spacing shouldn't matter (e.g. "Bio Career" should still find "BioCareer"),
+      // so compare with whitespace stripped from both the stored name and the query.
+      const tightQuery = query.replace(/\s+/g, "");
+
       const exactRows = await db
         .select()
         .from(organizations)
@@ -81,7 +85,7 @@ export const organizationRouter = createRouter({
           or(
             sql`lower(${organizations.recognitionCode}) = lower(${query})`,
             eq(organizations.slug, query),
-            sql`lower(${organizations.name}) = lower(${query})`
+            sql`lower(replace(${organizations.name}, ' ', '')) = lower(${tightQuery})`
           )
         )
         .limit(1);
@@ -91,7 +95,12 @@ export const organizationRouter = createRouter({
       const matchRows = await db
         .select()
         .from(organizations)
-        .where(ilike(organizations.name, `%${query}%`))
+        .where(
+          or(
+            ilike(organizations.name, `%${query}%`),
+            sql`lower(replace(${organizations.name}, ' ', '')) like lower(${`%${tightQuery}%`})`
+          )
+        )
         .orderBy(desc(organizations.isFeatured), organizations.name)
         .limit(10);
       const matches = await backfillMissingCodes(matchRows.filter((m) => m.id !== exact?.id));

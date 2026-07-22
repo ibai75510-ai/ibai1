@@ -7,7 +7,16 @@ import type { ReactNode } from "react";
 
 export const trpc = createTRPCReact<AppRouter>();
 
-const queryClient = new QueryClient();
+// staleTime keeps recently-fetched data fresh across route changes (e.g.
+// Network -> an institute -> back to Network) so navigating back doesn't
+// re-fetch and re-render a loading state for data that hasn't changed.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+    },
+  },
+});
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
