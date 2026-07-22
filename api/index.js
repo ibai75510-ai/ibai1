@@ -49767,6 +49767,9 @@ var organizations = pgTable("organizations", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
+  // Unique, human-readable ID (e.g. "IBAI-INST-00001") issued when the org is created,
+  // so anyone can verify an institute's recognition status by code on /verify without an account.
+  recognitionCode: varchar("recognition_code", { length: 50 }).unique(),
   logoUrl: varchar("logo_url", { length: 500 }),
   description: text("description"),
   website: varchar("website", { length: 500 }),
@@ -58449,9 +58452,33 @@ var partnershipRouter = createRouter({
   })
 });
 
+// server/lib/recognitionCode.ts
+var typePrefixes = {
+  institute: "INST",
+  university: "UNIV",
+  organization: "ORG",
+  lab: "LAB",
+  research_group: "RES",
+  journal: "JRN",
+  partner: "PTR"
+};
+function generateRecognitionCode(type, id) {
+  const prefix = typePrefixes[type] ?? "ORG";
+  return `IBAI-${prefix}-${id.toString().padStart(5, "0")}`;
+}
+
 // server/routers/organization.ts
 var typeEnum = external_exports.enum(["institute", "university", "organization", "lab", "research_group", "journal", "partner"]);
 var recognitionEnum = external_exports.enum(["recognized", "partner", "affiliated"]);
+async function backfillRecognitionCode(org) {
+  const db = getDb();
+  const recognitionCode = generateRecognitionCode(org.type, org.id);
+  await db.update(organizations).set({ recognitionCode }).where(eq(organizations.id, org.id));
+  return { ...org, recognitionCode };
+}
+async function backfillMissingCodes(items) {
+  return Promise.all(items.map((item) => item.recognitionCode ? item : backfillRecognitionCode(item)));
+}
 var organizationRouter = createRouter({
   list: publicQuery.input(
     external_exports.object({
@@ -58469,7 +58496,8 @@ var organizationRouter = createRouter({
     if (input?.type) conditions.push(eq(organizations.type, input.type));
     if (input?.featured) conditions.push(eq(organizations.isFeatured, true));
     const query = db.select().from(organizations);
-    const items = await (conditions.length ? query.where(and(...conditions)) : query).orderBy(desc(organizations.isFeatured), desc(organizations.createdAt)).limit(limit).offset(offset);
+    const rawItems = await (conditions.length ? query.where(and(...conditions)) : query).orderBy(desc(organizations.isFeatured), desc(organizations.createdAt)).limit(limit).offset(offset);
+    const items = await backfillMissingCodes(rawItems);
     const countQuery = db.select({ count: sql`count(*)::int` }).from(organizations);
     const [countResult] = await (conditions.length ? countQuery.where(and(...conditions)) : countQuery);
     return { items, total: countResult?.count || 0, page, limit };
@@ -58477,7 +58505,28 @@ var organizationRouter = createRouter({
   getBySlug: publicQuery.input(external_exports.object({ slug: external_exports.string() })).query(async ({ input }) => {
     const db = getDb();
     const items = await db.select().from(organizations).where(eq(organizations.slug, input.slug)).limit(1);
-    return items[0] || null;
+    const org = items[0];
+    if (!org) return null;
+    return org.recognitionCode ? org : await backfillRecognitionCode(org);
+  }),
+  // Public lookup used by /verify — anyone can confirm an institute's recognition
+  // status by exact code or by searching its name, without needing to know the slug.
+  verify: publicQuery.input(external_exports.object({ query: external_exports.string().min(1).max(255) })).query(async ({ input }) => {
+    const db = getDb();
+    const query = input.query.trim();
+    if (!query) return { exact: null, matches: [] };
+    const exactRows = await db.select().from(organizations).where(
+      or(
+        sql`lower(${organizations.recognitionCode}) = lower(${query})`,
+        eq(organizations.slug, query),
+        sql`lower(${organizations.name}) = lower(${query})`
+      )
+    ).limit(1);
+    const exactRow = exactRows[0];
+    const exact = exactRow ? exactRow.recognitionCode ? exactRow : await backfillRecognitionCode(exactRow) : null;
+    const matchRows = await db.select().from(organizations).where(ilike(organizations.name, `%${query}%`)).orderBy(desc(organizations.isFeatured), organizations.name).limit(10);
+    const matches = await backfillMissingCodes(matchRows.filter((m) => m.id !== exact?.id));
+    return { exact, matches };
   }),
   create: adminQuery.input(
     external_exports.object({
@@ -58497,7 +58546,10 @@ var organizationRouter = createRouter({
       return rows.length > 0;
     });
     const result = await db.insert(organizations).values({ ...input, slug }).returning({ id: organizations.id });
-    return { success: true, id: result[0].id };
+    const id = result[0].id;
+    const recognitionCode = generateRecognitionCode(input.type, id);
+    await db.update(organizations).set({ recognitionCode }).where(eq(organizations.id, id));
+    return { success: true, id, recognitionCode };
   }),
   update: adminQuery.input(
     external_exports.object({
