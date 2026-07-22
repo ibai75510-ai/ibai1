@@ -22,10 +22,13 @@ export default function Contact() {
       | "paper_submission",
   });
 
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const submitMutation = trpc.contact.submit.useMutation({
     onSuccess: () => {
-      toast.success("Message sent successfully! We'll get back to you soon.");
       setForm({ firstName: "", lastName: "", email: "", organization: "", subject: "", message: "", type: "general" });
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2800);
     },
     onError: (err) => toast.error(err.message),
   });
@@ -37,6 +40,59 @@ export default function Contact() {
 
   return (
     <div className="pt-20">
+      <style>{`
+        @keyframes success-fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes success-pop-in {
+          from { opacity: 0; transform: scale(0.8) translateY(8px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes success-ring-draw { to { stroke-dashoffset: 0; } }
+        @keyframes success-check-draw { to { stroke-dashoffset: 0; } }
+        @keyframes success-ring-pulse {
+          0% { transform: scale(0.9); opacity: 0.5; }
+          70% { transform: scale(1.15); opacity: 0; }
+          100% { transform: scale(1.15); opacity: 0; }
+        }
+        .success-overlay { animation: success-fade-in 0.25s ease-out; }
+        .success-card { animation: success-pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .success-pulse {
+          animation: success-ring-pulse 1.6s cubic-bezier(0.2, 0.7, 0.3, 1) 0.5s 1;
+        }
+        .success-ring {
+          stroke-dasharray: 151;
+          stroke-dashoffset: 151;
+          animation: success-ring-draw 0.5s ease-out forwards;
+        }
+        .success-check {
+          stroke-dasharray: 36;
+          stroke-dashoffset: 36;
+          animation: success-check-draw 0.35s ease-out 0.45s forwards;
+        }
+      `}</style>
+
+      {showSuccess && (
+        <div
+          className="success-overlay fixed inset-0 z-50 flex items-center justify-center bg-[#121a1f]/50 backdrop-blur-sm"
+          onClick={() => setShowSuccess(false)}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="success-card bg-[#faf9f6] rounded-2xl px-10 py-12 flex flex-col items-center text-center shadow-2xl max-w-sm mx-4">
+            <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
+              <span className="success-pulse absolute inset-0 rounded-full border-2 border-[#c25e44]" />
+              <svg viewBox="0 0 52 52" className="w-20 h-20">
+                <circle className="success-ring" cx="26" cy="26" r="24" fill="none" stroke="#c25e44" strokeWidth="2" />
+                <path className="success-check" fill="none" stroke="#c25e44" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" d="M14 27l7 7 16-16" />
+              </svg>
+            </div>
+            <h3 className="text-display text-2xl font-normal text-[#121a1f] tracking-[-0.01em] mb-2">Message Sent</h3>
+            <p className="text-[14px] text-[#828c78] leading-relaxed">
+              Thank you for reaching out. We'll get back to you soon.
+            </p>
+          </div>
+        </div>
+      )}
+
       <section className="bg-[#1f2a30] py-20 md:py-28">
         <div className="container-iba">
           <p className="text-[11px] font-medium tracking-[0.25em] uppercase text-[#828c78] mb-4">Contact</p>
