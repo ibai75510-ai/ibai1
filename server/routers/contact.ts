@@ -4,6 +4,8 @@ import { createRouter, publicQuery, adminQuery } from "../middleware";
 import { getDb } from "../queries/connection";
 import { contacts } from "@db/schema";
 
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xjgnewez";
+
 export const contactRouter = createRouter({
   submit: publicQuery
     .input(
@@ -28,6 +30,27 @@ export const contactRouter = createRouter({
     .mutation(async ({ input }) => {
       const db = getDb();
       const result = await db.insert(contacts).values(input).returning({ id: contacts.id });
+
+      // Best-effort relay so submissions also land directly in the inbox
+      // behind this Formspree form, alongside being saved above for the
+      // admin dashboard. A Formspree outage shouldn't fail the submission.
+      try {
+        await fetch(FORMSPREE_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            name: `${input.firstName} ${input.lastName}`,
+            email: input.email,
+            organization: input.organization ?? "",
+            subject: input.subject,
+            message: input.message,
+            type: input.type,
+          }),
+        });
+      } catch (err) {
+        console.error("Formspree relay failed:", err);
+      }
+
       return { success: true, id: result[0].id };
     }),
 
