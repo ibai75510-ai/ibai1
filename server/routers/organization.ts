@@ -77,7 +77,13 @@ export const organizationRouter = createRouter({
       const exactRows = await db
         .select()
         .from(organizations)
-        .where(or(sql`lower(${organizations.recognitionCode}) = lower(${query})`, eq(organizations.slug, query)))
+        .where(
+          or(
+            sql`lower(${organizations.recognitionCode}) = lower(${query})`,
+            eq(organizations.slug, query),
+            sql`lower(${organizations.name}) = lower(${query})`
+          )
+        )
         .limit(1);
       const exactRow = exactRows[0];
       const exact = exactRow ? (exactRow.recognitionCode ? exactRow : await backfillRecognitionCode(exactRow)) : null;
